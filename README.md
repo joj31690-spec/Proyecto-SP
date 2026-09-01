@@ -1,6 +1,14 @@
 # Proyecto-SP
 
-Sistema web para la **gestión y control de finanzas personales**, diseñado para permitir a un usuario registrar, organizar y analizar sus ingresos y gastos con el objetivo de obtener una visión clara de sus hábitos financieros y facilitar la toma de decisiones sobre el uso de su dinero.
+Sistema web para la **gestión y control de finanzas personales** (**Personal Finance Manager**), diseñado para permitir a un usuario registrar, organizar y analizar sus ingresos y gastos con el objetivo de obtener una visión clara de sus hábitos financieros y facilitar la toma de decisiones sobre el uso de su dinero.
+
+> **Docente:** Ing. Elias Cassal Baldiviezo
+>
+> **Materia:** Sistemas Paralelos
+>
+> **Arquitectura Base:** SysLab 2.0
+
+---
 
 ## 📌 Descripción del proyecto
 
@@ -28,184 +36,132 @@ Desarrollar una aplicación web que permita gestionar y analizar las finanzas pe
 * Implementar un sistema de autenticación para proteger la información.
 * Diseñar una arquitectura que permita ampliar el sistema posteriormente.
 
-## ⚙️ Funcionalidades principales
+---
 
-### 🔐 Autenticación
+## 🛠️ Arquitectura de Tecnologías (SysLab 2.0)
 
-El usuario podrá crear una cuenta e iniciar sesión para acceder a su información financiera.
+El proyecto está diseñado sobre la arquitectura **SysLab 2.0**, distribuyendo responsabilidades en tres capas principales orquestadas mediante contenedores Docker:
 
-Las cuentas estarán protegidas mediante autenticación basada en **JWT** y contraseñas almacenadas de forma segura mediante **Bcrypt**.
-
-### 💰 Gestión de ingresos y gastos
-
-El usuario podrá registrar movimientos financieros indicando información como:
-
-* Tipo de movimiento: ingreso o gasto.
-* Monto.
-* Categoría.
-* Descripción.
-* Fecha.
-* Método de pago.
-
-También podrá modificar y eliminar los movimientos registrados.
-
-### 🏷️ Categorías
-
-Los movimientos financieros podrán organizarse mediante categorías.
-
-Algunos ejemplos:
-
-* Alimentación
-* Transporte
-* Vivienda
-* Servicios
-* Entretenimiento
-* Salud
-* Educación
-* Compras
-* Salario
-* Otros
-
-### 📊 Dashboard financiero
-
-El sistema contará con un panel principal que mostrará un resumen de la situación financiera del usuario.
-
-Entre los datos que podrán visualizarse:
-
-* Saldo actual.
-* Total de ingresos.
-* Total de gastos.
-* Ingresos del periodo.
-* Gastos del periodo.
-* Distribución de gastos por categoría.
-
-### 🔎 Historial y filtros
-
-El usuario podrá consultar todos sus movimientos registrados y utilizar filtros para encontrar información específica.
-
-Los filtros podrán incluir:
-
-* Fecha.
-* Tipo de movimiento.
-* Categoría.
-* Método de pago.
-* Rango de montos.
-
-## 🛠️ Tecnologías
-
-### Frontend
-
-* **React.js 19** — Biblioteca principal para construir la interfaz de usuario mediante componentes reutilizables.
-* **Vite** — Herramienta utilizada para el entorno de desarrollo y la construcción del proyecto.
-* **React Router DOM** — Gestión de las rutas y navegación de la aplicación como Single Page Application (SPA).
-* **SWR** — Obtención, caché y revalidación de los datos provenientes de la API.
-* **Axios** — Cliente HTTP utilizado para la comunicación entre el frontend y el backend.
-* **CSS Vanilla** — Desarrollo de estilos utilizando CSS nativo y variables CSS para la implementación de temas como modo claro y oscuro.
-
-### Backend
-
-* **Node.js** — Entorno de ejecución utilizado para el servidor.
-* **Express** — Framework utilizado para construir la API RESTful.
-* **Prisma ORM** — ORM utilizado para interactuar con la base de datos y gestionar modelos, relaciones y migraciones.
-* **PostgreSQL** — Sistema gestor de base de datos relacional.
-* **Neon** — Plataforma utilizada para alojar la base de datos PostgreSQL.
-* **JWT (JSON Web Tokens)** — Sistema utilizado para la autenticación y gestión de sesiones.
-* **Bcrypt** — Biblioteca utilizada para realizar el hash seguro de las contraseñas.
-
-### Gestor de paquetes
-
-* **pnpm** — Gestor de paquetes utilizado para administrar las dependencias del proyecto.
-
-## 🏗️ Arquitectura
-
-El proyecto seguirá una arquitectura cliente-servidor, separando la aplicación en un frontend encargado de la interfaz de usuario y un backend encargado de la lógica de negocio y acceso a los datos.
+* **Frontend:** [React + Vite] — Interfaz de usuario responsiva.
+* **Backend:** [Node.js con Express] — API RESTful / Servidor de aplicaciones.
+* **Persistencia / Base de Datos:** PostgreSQL con **Prisma ORM** como mapeador objeto-relacional.
+* **Agente de IA:** Reglas (`rules`) y habilidades (`skills`) personalizadas integradas desde [TasteSkill](https://www.tasteskill.dev/).
 
 ```text
 ┌─────────────────────────────┐
 │           FRONTEND          │
-│                             │
-│ React + Vite                │
-│ React Router                │
-│ SWR + Axios                 │
-│ CSS Vanilla                 │
+│  React + Vite               │
 └──────────────┬──────────────┘
-               │
                │ HTTP / REST API
-               │
 ┌──────────────▼──────────────┐
 │           BACKEND           │
-│                             │
-│ Node.js + Express           │
-│ JWT + Bcrypt                │
-│ Prisma ORM                  │
+│  Node.js + Express          │
+│  JWT + Bcrypt + Prisma ORM  │
 └──────────────┬──────────────┘
                │
-               │
 ┌──────────────▼──────────────┐
-│          DATABASE           │
-│                             │
-│ PostgreSQL + Neon           │
+│         DATABASE            │
+│  PostgreSQL (Docker)        │
 └─────────────────────────────┘
 ```
 
-## 📂 Estructura inicial
+---
+
+## 📁 Estructura del Repositorio
 
 ```text
-personal-finance-manager/
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── package.json
-│
-├── backend/
-│   ├── src/
+.
+├── agente/                    # Skills e instrucciones del agente de IA
+│   ├── skills/                # Skills de TasteSkill y custom SysLab 2.0
+│   └── rules.md               # Reglas de comportamiento del agente
+├── backend/                   # Código fuente del Backend
 │   ├── prisma/
+│   │   ├── migrations/        # Migraciones aplicadas (Prisma)
+│   │   ├── schema.prisma      # Modelo de datos Prisma
+│   │   └── seed.js            # Script de datos iniciales
+│   ├── Dockerfile             # Imagen Docker del Backend
 │   └── package.json
-│
-├── README.md
-└── package.json
+├── frontend/                  # Código fuente del Frontend
+│   ├── Dockerfile             # Imagen Docker del Frontend
+│   └── package.json
+├── docker-compose.yml         # Orquestación de contenedores (Frontend, Backend, DB)
+└── README.md                  # Documentación general del proyecto
 ```
 
-La estructura podrá modificarse conforme avance el desarrollo y se incorporen nuevos módulos.
+---
 
-## 📈 Alcance inicial
+## 🚀 Guía de Ejecución
 
-La primera versión del proyecto estará enfocada en las funcionalidades fundamentales:
+### Requisitos previos
 
-1. Registro de usuarios.
-2. Inicio de sesión.
-3. Gestión de ingresos.
-4. Gestión de gastos.
-5. Gestión de categorías.
-6. Consulta del historial financiero.
-7. Filtros de movimientos.
-8. Dashboard financiero.
-9. Cálculo del balance personal.
-10. Modo claro y oscuro.
+* Docker Engine + Docker Compose V2 instalados.
 
-El objetivo de esta primera versión será construir una base funcional sobre la cual puedan incorporarse posteriormente nuevas características.
+### Levantar el sistema
 
-## 🚀 Posibles funcionalidades futuras
+```bash
+# 1. Configurar credenciales
+cp .env.example .env
 
-Una vez implementada la versión inicial, el sistema podrá ampliarse con funcionalidades como:
+# 2. Construir y levantar los contenedores
+docker compose up --build -d
 
-* Presupuestos mensuales.
-* Límites de gasto por categoría.
-* Metas de ahorro.
-* Gastos e ingresos recurrentes.
-* Recordatorios de pagos.
-* Gestión de deudas personales.
-* Comparación de gastos entre diferentes meses.
-* Estadísticas y gráficos avanzados.
-* Exportación de información a Excel o PDF.
-* Importación de movimientos.
-* Notificaciones.
+# 3. Verificar el estado
+docker compose ps
+```
 
-Estas funcionalidades no forman parte necesariamente de la primera versión y podrán incorporarse posteriormente según las necesidades del proyecto.
+### Migraciones y datos iniciales
 
-## 👤 Usuario objetivo
+```bash
+# Ejecutar migraciones (crear tablas en PostgreSQL)
+docker compose exec backend-api npx prisma migrate dev --name init
 
-El sistema está dirigido a **personas que desean llevar un control organizado de sus finanzas personales**, permitiéndoles registrar sus movimientos financieros y consultar información que les ayude a comprender mejor sus hábitos de gasto.
+# Ejecutar el script de poblado de datos (Seed)
+docker compose exec backend-api node prisma/seed.js
+```
 
-El proyecto estará orientado inicialmente al **uso personal**, no a la administración contable de empresas.
+### Acceso
+
+| Servicio   | URL                                          |
+| ---------- | -------------------------------------------- |
+| Frontend   | http://localhost:5173                        |
+| Backend    | http://localhost:5000/api                    |
+| PostgreSQL | `localhost:5433` (usuario `admin_syslab`)    |
+
+### Detener el sistema
+
+```bash
+docker compose down
+```
+
+> **Nota:** no usar `docker compose down -v` si se desea conservar los datos de PostgreSQL (se almacenan en el volumen `postgres_data`).
+
+---
+
+## 🧩 Las 6 Evidencias de la Práctica
+
+1. **Estructura de directorios e inicialización** — árbol del proyecto con `package.json` en `./backend` y `./frontend`.
+2. **Modelado de persistencia** — captura de `schema.prisma` y `git log -1` del commit `feat(backend)`.
+3. **Agente, reglas e skills** — explorador mostrando `agente/` con las skills y `rules.md`.
+4. **Docker Compose** — `docker compose ps` con los 3 contenedores en estado `Up` / `healthy`.
+5. **Migraciones y seed** — resultado exitoso de `prisma migrate dev` y ejecución de `seed.js`.
+6. **Documentación y publicación** — este repositorio público y el `README.md` renderizado en GitHub.
+
+---
+
+## 📜 Historial de Commits (Conventional Commits)
+
+```text
+f9677e6 docs(readme): completar documentacion del proyecto y guia de ejecucion
+bd929ba feat(db): migrar esquema a postgresql y ejecutar script de seed
+25adb97 feat(docker): configurar entorno multi-contenedor con docker-compose
+5f6b9d3 chore(agente): incorporar skills de tasteskill y reglas de arquitectura syslab 2.0
+e386d47 feat(backend): definir esquema de prisma y script de seed inicial
+2ee452b chore(init): inicializar estructura base del proyecto
+```
+
+---
+
+## 📧 Contacto
+
+* **Docente:** Ing. Elias Cassal Baldiviezo
+* **Materia:** Sistemas Paralelos
