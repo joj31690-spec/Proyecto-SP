@@ -137,6 +137,22 @@ docker compose down
 
 ---
 
+## 🔐 Seguridad: variables de entorno y secretos
+
+Este repositorio es **público**, por lo que no contiene credenciales reales:
+
+* Los archivos `.env`, `backend/.env` y `frontend/.env` están ignorados por Git (ver `.gitignore`) y nunca se suben al repositorio.
+* `docker-compose.yml` lee las credenciales de PostgreSQL desde variables del `.env` (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`).
+* `backend/prisma.config.ts` obtiene la conexión desde `DATABASE_URL` (inyectada por el contenedor), sin credenciales hardcodeadas.
+* `.env.example` es la plantilla pública con placeholders; para ejecutar localmente se debe crear `.env` copiando la plantilla y reemplazando los valores.
+
+```bash
+cp .env.example .env
+# editar .env con tus valores reales y NO subirlo al repositorio
+```
+
+---
+
 ## 🧩 Las 6 Evidencias de la Práctica
 
 1. **Estructura de directorios e inicialización** — árbol del proyecto con `package.json` en `./backend` y `./frontend`.
@@ -151,11 +167,12 @@ docker compose down
 ## 📜 Historial de Commits (Conventional Commits)
 
 ```text
-f9677e6 docs(readme): completar documentacion del proyecto y guia de ejecucion
-bd929ba feat(db): migrar esquema a postgresql y ejecutar script de seed
-25adb97 feat(docker): configurar entorno multi-contenedor con docker-compose
-5f6b9d3 chore(agente): incorporar skills de tasteskill y reglas de arquitectura syslab 2.0
-e386d47 feat(backend): definir esquema de prisma y script de seed inicial
+7603ac8 fix(security): remover credenciales hardcodeadas y parametrizar postgres via .env
+318d778 docs(readme): completar documentacion del proyecto y guia de ejecucion
+731b6be feat(db): migrar esquema a postgresql y ejecutar script de seed
+70ffa5b feat(docker): configurar entorno multi-contenedor con docker-compose
+f593b4c chore(agente): incorporar skills de tasteskill y reglas de arquitectura syslab 2.0
+b452fa7 feat(backend): definir esquema de prisma y script de seed inicial
 2ee452b chore(init): inicializar estructura base del proyecto
 ```
 
