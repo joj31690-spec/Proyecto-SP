@@ -1,0 +1,26 @@
+{
+  "name": "personal-finance-manager-frontend",
+  "version": "1.0.0",
+  "description": "Interfaz de usuario de Personal Finance Manager",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "keywords": [
+    "finanzas",
+    "frontend",
+    "react",
+    "vite"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.2.2"
+  }
+}
