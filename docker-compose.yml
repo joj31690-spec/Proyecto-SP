@@ -1,0 +1,75 @@
+services:
+  # 1. Base de Datos Relacional (PostgreSQL)
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: sp_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin_syslab
+      POSTGRES_PASSWORD: SecretPassword2026
+      POSTGRES_DB: syslab_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sp_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin_syslab -d syslab_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Núcleo del Backend (Express en Puerto 5000)
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sp_backend_api
+    restart: always
+    command: >
+      sh -c "npx prisma generate && npx prisma db push && npm run dev"
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./.env
+    environment:
+      CHOKIDAR_USEPOLLING: true
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - sp_network
+
+  # 3. Interfaz de Usuario (React + Vite en Puerto 5173)
+  frontend-app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sp_frontend_app
+    restart: always
+    ports:
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./.env
+    environment:
+      CHOKIDAR_USEPOLLING: true
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - backend-api
+    networks:
+      - sp_network
+
+volumes:
+  postgres_data:
+
+networks:
+  sp_network:
+    driver: bridge
