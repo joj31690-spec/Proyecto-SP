@@ -1,0 +1,70 @@
+// backend/prisma/schema.prisma
+// ============================================================
+// Personal Finance Manager — Modelo de persistencia (Prisma ORM)
+// Proveedor: PostgreSQL (SysLab 2.0)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// Usuario — identificador principal de la información financiera
+// ============================================================
+model Usuario {
+  id            Int        @id @default(autoincrement())
+  nombre        String     @db.VarChar(100)
+  email         String     @unique @db.VarChar(150)
+  passwordHash  String     @map("password_hash") @db.VarChar(255)
+  activo        Boolean    @default(true)
+  creadoEn      DateTime   @default(now()) @map("creado_en")
+  actualizadoEn DateTime   @updatedAt @map("actualizado_en")
+
+  movimientos  Movimiento[]
+  categorias   Categoria[]
+
+  @@map("usuarios")
+}
+
+// ============================================================
+// Categoria — clasificación de los movimientos financieros
+// ============================================================
+model Categoria {
+  id       Int    @id @default(autoincrement())
+  nombre   String @db.VarChar(80)
+  color    String @default("#3b82f6") @db.VarChar(9)
+  tipo     String @default("gasto") @db.VarChar(20) // 'ingreso' | 'gasto'
+  usuarioId Int  @map("usuario_id")
+
+  usuario    Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  movimientos Movimiento[]
+
+  @@unique([usuarioId, nombre])
+  @@map("categorias")
+}
+
+// ============================================================
+// Movimiento — ingreso o gasto financiero registrado por el usuario
+// ============================================================
+model Movimiento {
+  id            Int      @id @default(autoincrement())
+  tipo          String   @db.VarChar(20) // 'ingreso' | 'gasto'
+  monto         Decimal  @db.Decimal(12, 2)
+  descripcion   String?  @db.VarChar(255)
+  fecha         DateTime @default(now())
+  metodoPago    String?  @map("metodo_pago") @db.VarChar(50)
+  usuarioId     Int      @map("usuario_id")
+  categoriaId   Int      @map("categoria_id")
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
+
+  @@index([usuarioId, fecha])
+  @@map("movimientos")
+}
