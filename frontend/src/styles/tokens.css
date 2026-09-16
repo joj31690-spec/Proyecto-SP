@@ -1,0 +1,80 @@
+/* ============================================================
+   Personal Finance Manager — Design Tokens (fuente de verdad)
+   Todos los componentes deben usar var(--*) de este archivo.
+   ============================================================ */
+
+:root {
+  /* -------- Paleta base (tema oscuro con tinte verde) -------- */
+  --bg-base:        #0b0f0c;   /* fondo de la app */
+  --bg-surface:     #111713;   /* tarjetas / paneles */
+  --bg-elevated:    #18211b;   /* superficies superiores */
+  --bg-hover:       #1e2a22;
+  --border:         #243129;
+  --border-strong:  #2e3d32;
+
+  /* -------- Acentos verdes (finanzas = crecimiento) -------- */
+  --green:          #22d868;
+  --green-bright:   #3afa7f;
+  --green-dim:      #158a46;
+  --green-glow:     rgba(34, 216, 104, 0.16);
+
+  /* -------- Semánticos -------- */
+  --positive:       #22d868;   /* ingreso */
+  --negative:       #ff5d5d;   /* gasto */
+  --warning:        #ffb020;
+
+  /* -------- Texto -------- */
+  --text-primary:   #eef6ef;
+  --text-muted:     #9db3a4;
+  --text-faint:     #64776b;
+
+  /* -------- Tipografía -------- */
+  --font-display:   'Space Grotesk', system-ui, sans-serif;
+  --font-body:      'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:      'JetBrains Mono', ui-monospace, monospace;
+
+  /* -------- Radios -------- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  /* -------- Sombras -------- */
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 0 1px var(--border-strong), 0 10px 40px var(--green-glow);
+
+  /* -------- Espaciado (4px base) -------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* -------- Transiciones -------- */
+  --transition: 160ms ease;
+  --transition-slow: 300ms ease;
+
+  /* -------- Capas -------- */
+  --z-sidebar: 20;
+}
+
+/* Soporte para modo claro opcional (se activa con data-theme="light") */
+[data-theme='light'] {
+  --bg-base:        #f4f7f4;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #eef3ee;
+  --bg-hover:       #e3ebe3;
+  --border:         #d8e2d8;
+  --border-strong:  #c4d4c4;
+  --green:          #15a14a;
+  --green-bright:   #12b24e;
+  --green-glow:     rgba(21, 161, 74, 0.12);
+  --positive:       #15a14a;
+  --negative:       #d63b3b;
+  --text-primary:   #14211a;
+  --text-muted:     #47584c;
+  --text-faint:     #78887c;
+}

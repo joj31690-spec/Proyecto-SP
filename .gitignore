@@ -23,5 +23,6 @@ Thumbs.db
 # Informes de entrega (se adjuntan manualmente, no al repo)
 *.txt.info
 INFORME_FINAL.txt
+GUIA_OPERACION.txt
 informe*.docx
 informe*.pdf

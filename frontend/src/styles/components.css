@@ -1,0 +1,154 @@
+/* ============================================================
+   Personal Finance Manager — Componentes UI compartidos
+   Todas las clases derivan tokens de tokens.css → coherencia total.
+   ============================================================ */
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font: 500 0.92rem var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg-hover); }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--green), var(--green-dim));
+  color: #06120a;
+  font-weight: 600;
+  box-shadow: 0 6px 20px var(--green-glow);
+}
+.btn-primary:hover { background: linear-gradient(135deg, var(--green-bright), var(--green)); }
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text-muted);
+}
+.btn-ghost:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+.btn-danger { color: var(--negative); }
+.btn-danger:hover { background: rgba(255, 93, 93, 0.1); }
+
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-sm { padding: var(--space-2) var(--space-3); font-size: 0.82rem; }
+
+/* ---------- Inputs ---------- */
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+.field label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  transition: border var(--transition), box-shadow var(--transition);
+}
+.input::placeholder { color: var(--text-faint); }
+.input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-glow);
+}
+
+/* ---------- Card ---------- */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+.card-pad-sm { padding: var(--space-4); }
+.card-hover:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ---------- Badge ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge-ingreso { background: var(--green-glow); color: var(--positive); }
+.badge-gasto { background: rgba(255, 93, 93, 0.12); color: var(--negative); }
+
+/* ---------- Tabla ---------- */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.table th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+.table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: var(--bg-hover); }
+
+/* ---------- Monto (positivo/negativo) ---------- */
+.monto { font-family: var(--font-mono); font-weight: 600; }
+.monto-pos { color: var(--positive); }
+.monto-neg { color: var(--negative); }
+
+/* ---------- Estado vacío ---------- */
+.empty {
+  text-align: center;
+  padding: var(--space-7) var(--space-5);
+  color: var(--text-muted);
+}
+.empty .empty-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--text-primary); margin-bottom: var(--space-2); }
+
+/* ---------- Alertas de error ---------- */
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+}
+.alert-error { background: rgba(255, 93, 93, 0.12); color: var(--negative); border: 1px solid rgba(255, 93, 93, 0.3); }
+
+/* ---------- Spinner ---------- */
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: var(--space-6) auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

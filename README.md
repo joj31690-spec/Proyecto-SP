@@ -164,6 +164,30 @@ cp .env.example .env
 
 ---
 
+## 📖 Historias de Usuario y Criterios de Aceptación (Implementadas)
+
+Historias de usuario ya **implementadas** en el sistema, cada una con su criterio de aceptación verificado.
+
+### Historia de Usuario 1 — Autenticación de usuario
+
+> **Como** usuario, **quiero** registrarme e iniciar sesión de forma segura en el sistema **para** poder acceder y proteger mi información financiera.
+
+**Criterio de aceptación:** el sistema permite registrar una cuenta con nombre, email y contraseña (mín. 6 caracteres), encripta la contraseña, y solo entrega un token JWT al iniciar sesión con credenciales válidas, denegando el acceso a las rutas protegidas sin token.
+
+### Historia de Usuario 2 — Registro y administración de movimientos
+
+> **Como** usuario, **quiero** registrar, consultar y eliminar mis ingresos y gastos clasificándolos por categoría **para** mantener un control de mi historial financiero.
+
+**Criterio de aceptación:** el sistema permite crear un movimiento de tipo ingreso o gasto con monto mayor a 0, fecha, método de pago y una categoría válida del usuario, lo lista ordenado por fecha y permite eliminarlo.
+
+### Historia de Usuario 3 — Visualización del resumen financiero
+
+> **Como** usuario, **quiero** visualizar un resumen de mi situación financiera **para** conocer mi saldo, mis ingresos y gastos totales y los del mes en curso.
+
+**Criterio de aceptación:** el dashboard muestra el saldo total, el total de ingresos, el total de gastos, el balance del mes y los movimientos más recientes, calculados exclusivamente con los datos del usuario autenticado.
+
+---
+
 ## 📜 Historial de Commits (Conventional Commits)
 
 ```text
