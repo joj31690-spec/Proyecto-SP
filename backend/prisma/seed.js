@@ -16,6 +16,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Iniciando seed de Personal Finance Manager...');
+  const ahora = new Date();
 
   // 1. Usuario de demostración
   const passwordHash = await bcrypt.hash('Demo1234!', 10);
@@ -103,6 +104,32 @@ async function main() {
     ],
   });
   console.log('✅ 4 movimientos de ejemplo creados.');
+
+  // 4. Presupuestos de ejemplo (periodo actual)
+  const presupuestosDefault = [
+    { categoria: alimentos, monto: 1000.0 },
+    { categoria: transporte, monto: 300.0 },
+    { categoria: vivienda, monto: 1500.0 },
+  ];
+  for (const p of presupuestosDefault) {
+    await prisma.presupuesto.upsert({
+      where: {
+        categoriaId_anio_mes: {
+          categoriaId: p.categoria.id,
+          anio: ahora.getFullYear(),
+          mes: ahora.getMonth() + 1,
+        },
+      },
+      update: {},
+      create: {
+        monto: p.monto,
+        anio: ahora.getFullYear(),
+        mes: ahora.getMonth() + 1,
+        categoriaId: p.categoria.id,
+      },
+    });
+  }
+  console.log(`✅ ${presupuestosDefault.length} presupuestos de ejemplo creados.`);
   console.log('🎉 Seed completado con éxito.');
 }
 

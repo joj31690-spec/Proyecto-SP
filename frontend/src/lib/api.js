@@ -35,5 +35,9 @@ export const api = {
   createMovimiento: (m) => request('/movimientos', { method: 'POST', body: m }),
   deleteMovimiento: (id) => request(`/movimientos/${id}`, { method: 'DELETE' }),
 
+  getPresupuestos: (anio, mes) => request(`/presupuestos?anio=${anio}&mes=${mes}`),
+  savePresupuesto: (p) => request('/presupuestos', { method: 'POST', body: p }),
+  deletePresupuesto: (id) => request(`/presupuestos/${id}`, { method: 'DELETE' }),
+
   getDashboard: () => request('/dashboard'),
 };

@@ -10,6 +10,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const authRoutes = require('./routes/auth.routes');
 const categoriasRoutes = require('./routes/categorias.routes');
 const movimientosRoutes = require('./routes/movimientos.routes');
+const presupuestosRoutes = require('./routes/presupuestos.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 // Rutas protegidas (requieren token JWT)
 app.use('/api/categorias', auth, categoriasRoutes);
 app.use('/api/movimientos', auth, movimientosRoutes);
+app.use('/api/presupuestos', auth, presupuestosRoutes);
 app.use('/api/dashboard', auth, dashboardRoutes);
 
 // Ruta no encontrada

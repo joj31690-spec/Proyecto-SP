@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const navItems = [
   { to: '/', label: 'Resumen', icon: '◈', end: true },
   { to: '/movimientos', label: 'Movimientos', icon: '↕' },
+  { to: '/presupuestos', label: 'Presupuestos', icon: '◷' },
 ];
 
 export default function AppLayout() {

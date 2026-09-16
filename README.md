@@ -32,6 +32,7 @@ Desarrollar una aplicación web que permita gestionar y analizar las finanzas pe
 * Obtener el balance entre ingresos y gastos.
 * Visualizar un resumen de la situación financiera.
 * Filtrar movimientos por diferentes criterios.
+* Definir presupuestos mensuales por categoría y controlar el gasto real.
 * Mantener la información financiera asociada a cada usuario.
 * Implementar un sistema de autenticación para proteger la información.
 * Diseñar una arquitectura que permita ampliar el sistema posteriormente.
@@ -168,11 +169,11 @@ cp .env.example .env
 
 Historias de usuario ya **implementadas** en el sistema, cada una con su criterio de aceptación verificado.
 
-### Historia de Usuario 1 — Configuración inicial automática de categorías
+### Historia de Usuario 1 — Definición y control de presupuestos mensuales
 
-> **Como** nuevo usuario, **quiero** que al crear mi cuenta el sistema configure automáticamente categorías predefinidas **para** empezar a registrar mis movimientos sin tener que configurar todo manualmente.
+> **Como** usuario, **quiero** definir un límite de gasto mensual por categoría **para** controlar mi consumo y evitar sobrepasarlo.
 
-**Criterio de aceptación:** al crear una cuenta, el sistema genera automáticamente las categorías por defecto (Salario, Alimentación, Transporte, Vivienda, Servicios, Entretenimiento, Salud, Educación y Compras) con su tipo (ingreso/gasto) y color, asociadas únicamente a ese usuario.
+**Criterio de aceptación:** el sistema permite guardar un presupuesto por categoría (gasto) para un periodo específico (mes/año), muestra el gasto real acumulado frente al límite con una barra de progreso y marca en rojo las categorías que exceden el presupuesto.
 
 ### Historia de Usuario 2 — Registro y administración de movimientos
 
