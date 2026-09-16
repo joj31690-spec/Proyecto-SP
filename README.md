@@ -168,11 +168,11 @@ cp .env.example .env
 
 Historias de usuario ya **implementadas** en el sistema, cada una con su criterio de aceptación verificado.
 
-### Historia de Usuario 1 — Autenticación de usuario
+### Historia de Usuario 1 — Configuración inicial automática de categorías
 
-> **Como** usuario, **quiero** registrarme e iniciar sesión de forma segura en el sistema **para** poder acceder y proteger mi información financiera.
+> **Como** nuevo usuario, **quiero** que al crear mi cuenta el sistema configure automáticamente categorías predefinidas **para** empezar a registrar mis movimientos sin tener que configurar todo manualmente.
 
-**Criterio de aceptación:** el sistema permite registrar una cuenta con nombre, email y contraseña (mín. 6 caracteres), encripta la contraseña, y solo entrega un token JWT al iniciar sesión con credenciales válidas, denegando el acceso a las rutas protegidas sin token.
+**Criterio de aceptación:** al crear una cuenta, el sistema genera automáticamente las categorías por defecto (Salario, Alimentación, Transporte, Vivienda, Servicios, Entretenimiento, Salud, Educación y Compras) con su tipo (ingreso/gasto) y color, asociadas únicamente a ese usuario.
 
 ### Historia de Usuario 2 — Registro y administración de movimientos
 
