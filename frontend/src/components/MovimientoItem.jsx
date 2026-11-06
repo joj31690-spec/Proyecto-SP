@@ -4,10 +4,10 @@ import { formatMonto } from './TarjetaResumen';
 
 function formatFecha(fechaStr) {
   const d = new Date(fechaStr);
-  return new Intl.DateTimeFormat('es-BO', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat('es-BO', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/La_Paz' }).format(d);
 }
 
-export default function MovimientoItem({ movimiento: m, onEliminar }) {
+export default function MovimientoItem({ movimiento: m, onEliminar, onEditar }) {
   const esIngreso = m.tipo === 'ingreso';
 
   return (
@@ -30,8 +30,9 @@ export default function MovimientoItem({ movimiento: m, onEliminar }) {
         {esIngreso ? '+' : '−'}
         {formatMonto(m.monto)}
       </div>
+      {onEditar && <button className="btn btn-ghost btn-sm" onClick={() => onEditar(m)} aria-label={`Editar ${m.descripcion || 'movimiento'}`}>Editar</button>}
       {onEliminar && (
-        <button className="btn btn-danger btn-sm" onClick={() => onEliminar(m.id)} title="Eliminar">
+        <button className="btn btn-danger btn-sm" onClick={() => onEliminar(m.id)} title="Eliminar" aria-label={`Eliminar ${m.descripcion || 'movimiento'}`}>
           ✕
         </button>
       )}

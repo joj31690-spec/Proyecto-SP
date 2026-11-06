@@ -3,6 +3,7 @@
 
 const TOKEN_KEY = 'pfm_token';
 const USER_KEY = 'pfm_user';
+export const SESSION_EXPIRED_EVENT = 'pfm:session-expired';
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
@@ -24,6 +25,13 @@ export function saveSession({ token, usuario }) {
 export function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+}
+
+export function expireSession(token) {
+  // Una respuesta antigua no debe cerrar una sesión iniciada después.
+  if (getToken() !== token) return;
+  clearSession();
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
 }
 
 export function isAutenticado() {

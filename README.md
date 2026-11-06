@@ -113,8 +113,9 @@ docker compose ps
 ### Migraciones y datos iniciales
 
 ```bash
-# Ejecutar migraciones (crear tablas en PostgreSQL)
-docker compose exec backend-api npx prisma migrate dev --name init
+# Las migraciones versionadas se aplican automáticamente al iniciar el backend.
+# También se pueden aplicar manualmente:
+docker compose exec backend-api npx prisma migrate deploy
 
 # Ejecutar el script de poblado de datos (Seed)
 docker compose exec backend-api node prisma/seed.js
@@ -128,6 +129,19 @@ docker compose exec backend-api node prisma/seed.js
 | Backend    | http://localhost:5000/api                    |
 | PostgreSQL | `localhost:5433` (usuario `admin_syslab`)    |
 
+Desde otro equipo de la red, abrir `http://<IP-de-la-VM>:5173`.
+El frontend consulta `/api` en esa misma dirección y Vite reenvía las peticiones
+al backend mediante la red interna de Docker (`http://backend-api:5000`).
+Así, el navegador no depende de una IP fija para la API ni de acceder al puerto 5000.
+Docker Compose establece `VITE_API_URL=/api` y `API_PROXY_TARGET` automáticamente.
+Si se ejecuta Vite fuera de Docker, el proxy utiliza `http://localhost:5000` por defecto.
+Para servir una compilación con otro servidor web, configurar también el proxy de `/api`.
+
+Si aparece `No se pudo cargar el resumen: Failed to fetch`, comprobar
+`docker compose ps` y `http://<IP-de-la-VM>:5173/api/health`.
+Después de cambiar variables de entorno, aplicar los cambios con
+`docker compose up -d` y recargar la página.
+
 ### Detener el sistema
 
 ```bash
@@ -135,6 +149,67 @@ docker compose down
 ```
 
 > **Nota:** no usar `docker compose down -v` si se desea conservar los datos de PostgreSQL (se almacenan en el volumen `postgres_data`).
+
+---
+
+## Funcionalidades de gestión financiera
+
+### Movimientos
+
+- Crear, editar y eliminar ingresos o gastos propios.
+- Buscar por descripción y combinar filtros por fechas (ambos extremos incluidos),
+  categoría, tipo y método de pago. Los métodos incluyen los valores registrados
+  por el usuario; al registrar un movimiento se sugieren efectivo, QR, transferencia y tarjeta.
+- Limpiar filtros y consultar el número de resultados.
+- Las fechas de movimientos y sus filtros utilizan el calendario de Bolivia
+  (`America/La_Paz`). Los montos admiten hasta dos decimales.
+
+### Metas de ahorro
+
+- Página propia en **Metas de ahorro**, con nombre, monto objetivo y fecha opcional.
+- Apartado destacado en el resumen con total ahorrado, metas alcanzadas y hasta tres
+  metas, mostrando primero las que siguen en progreso.
+- Registrar aportes con fecha y nota; consultar y eliminar aportes incorrectos.
+- Editar el objetivo o eliminar la meta con su historial. Se permiten aportes que
+  superen el objetivo; la barra se limita al 100 % y la meta se marca como alcanzada.
+- Los aportes son un seguimiento del dinero ya separado: **no crean gastos,
+  no realizan transferencias y no modifican el saldo financiero**. El usuario debe
+  evitar asignar el mismo ahorro a varias metas. La fecha objetivo es informativa.
+
+### Gastos recurrentes y recordatorios
+
+- Programar gastos semanales, cada 14 días, mensuales o anuales, con categoría,
+  monto, método de pago, primer vencimiento pendiente y aviso entre 0 y 30 días.
+- Ver recordatorios de pagos próximos, del día o vencidos en el resumen y en
+  **Pagos recurrentes**. Se calculan al consultar la pantalla; no se envían correos
+  ni notificaciones externas y no hace falta un proceso de tareas programadas.
+- Registrar manualmente cada pago con su fecha real: se crea un gasto y se avanza
+  exactamente un vencimiento. Las cuotas atrasadas se registran una por una.
+- Dos solicitudes simultáneas para la misma cuota no duplican el pago.
+- Las mensualidades conservan su día original: 31 de enero → último día de febrero
+  → 31 de marzo. Las anualidades también consideran años bisiestos.
+- Pausar y reactivar conserva el vencimiento pendiente. Eliminar la programación
+  conserva los movimientos pagados; eliminar un movimiento no retrocede el calendario.
+
+### Verificaciones
+
+Con los servicios levantados:
+
+```bash
+docker compose exec backend-api npm test
+docker compose exec frontend-app npm run build
+docker compose config --quiet
+```
+
+Las pruebas de API crean usuarios temporales y los eliminan al terminar. Cubren
+edición, filtros combinados, aislamiento por usuario, aportes, metas alcanzadas,
+saldo, recordatorios y concurrencia de pagos, además del calendario de recurrencias.
+
+Si se actualiza una instalación antigua creada con `prisma db push`, antes de
+usar las migraciones se debe comprobar que su esquema coincide con las migraciones
+existentes y establecer la línea base con `prisma migrate resolve --applied` para
+las migraciones que ya estén reflejadas en esa base. No se debe reiniciar ni borrar
+la base para actualizarla.
 
 ---
 

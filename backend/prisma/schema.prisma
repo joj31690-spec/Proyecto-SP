@@ -26,6 +26,8 @@ model Usuario {
 
   movimientos  Movimiento[]
   categorias   Categoria[]
+  metas        MetaAhorro[]
+  recurrentes  GastoRecurrente[]
 
   @@map("usuarios")
 }
@@ -43,6 +45,7 @@ model Categoria {
   usuario      Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   movimientos  Movimiento[]
   presupuestos Presupuesto[]
+  recurrentes GastoRecurrente[]
 
   @@unique([usuarioId, nombre])
   @@map("categorias")
@@ -65,7 +68,11 @@ model Movimiento {
 
   usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   categoria Categoria @relation(fields: [categoriaId], references: [id])
+  recurrenteId Int? @map("recurrente_id")
+  fechaProgramada DateTime? @db.Date @map("fecha_programada")
+  recurrente GastoRecurrente? @relation(fields: [recurrenteId], references: [id], onDelete: SetNull)
 
+  @@unique([recurrenteId, fechaProgramada])
   @@index([usuarioId, fecha])
   @@map("movimientos")
 }
@@ -86,4 +93,54 @@ model Presupuesto {
 
   @@unique([categoriaId, anio, mes])
   @@map("presupuestos")
+}
+
+model MetaAhorro {
+  id Int @id @default(autoincrement())
+  nombre String @db.VarChar(100)
+  objetivo Decimal @db.Decimal(12, 2)
+  fechaObjetivo DateTime? @db.Date @map("fecha_objetivo")
+  usuarioId Int @map("usuario_id")
+  creadoEn DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  aportes AporteAhorro[]
+
+  @@index([usuarioId])
+  @@map("metas_ahorro")
+}
+
+model AporteAhorro {
+  id Int @id @default(autoincrement())
+  monto Decimal @db.Decimal(12, 2)
+  fecha DateTime @db.Date
+  nota String? @db.VarChar(255)
+  metaId Int @map("meta_id")
+  creadoEn DateTime @default(now()) @map("creado_en")
+  meta MetaAhorro @relation(fields: [metaId], references: [id], onDelete: Cascade)
+
+  @@index([metaId])
+  @@map("aportes_ahorro")
+}
+
+model GastoRecurrente {
+  id Int @id @default(autoincrement())
+  nombre String @db.VarChar(100)
+  monto Decimal @db.Decimal(12, 2)
+  metodoPago String? @db.VarChar(50) @map("metodo_pago")
+  frecuencia String @db.VarChar(20)
+  fechaInicio DateTime @db.Date @map("fecha_inicio")
+  proximoVencimiento DateTime @db.Date @map("proximo_vencimiento")
+  diasAviso Int @default(3) @map("dias_aviso")
+  activo Boolean @default(true)
+  usuarioId Int @map("usuario_id")
+  categoriaId Int @map("categoria_id")
+  creadoEn DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
+  movimientos Movimiento[]
+
+  @@index([usuarioId, proximoVencimiento])
+  @@map("gastos_recurrentes")
 }

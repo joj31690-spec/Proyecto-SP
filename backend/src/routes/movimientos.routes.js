@@ -1,79 +1,76 @@
-// backend/src/routes/movimientos.routes.js
-// CRUD básico de movimientos financieros del usuario autenticado
 const router = require('express').Router();
 const prisma = require('../lib/prisma');
+const { error, id, dinero, texto, fecha } = require('../lib/validacion');
+const include = { categoria: { select: { id: true, nombre: true, color: true, tipo: true } } };
 
-// GET /api/movimientos
+async function datos(body, usuarioId) {
+  const { tipo } = body;
+  if (!['ingreso', 'gasto'].includes(tipo)) throw error('El tipo debe ser ingreso o gasto');
+  const categoria = await prisma.categoria.findFirst({ where: { id: id(body.categoriaId), usuarioId, tipo } });
+  if (!categoria) throw error('La categoría debe pertenecer al usuario y coincidir con el tipo de movimiento');
+  return {
+    tipo, monto: dinero(body.monto), categoriaId: categoria.id,
+    descripcion: texto(body.descripcion, 'Descripción', 255),
+    metodoPago: texto(body.metodoPago, 'Método de pago', 50),
+    fecha: fecha(body.fecha),
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
-    const movimientos = await prisma.movimiento.findMany({
-      where: { usuarioId: req.usuario.id },
-      include: { categoria: { select: { nombre: true, color: true, tipo: true } } },
-      orderBy: { fecha: 'desc' },
-    });
-    res.json({ status: 'ok', data: movimientos });
-  } catch (e) {
-    next(e);
-  }
+    const q = req.query;
+    const where = { usuarioId: req.usuario.id };
+    if (q.tipo) {
+      if (!['ingreso', 'gasto'].includes(q.tipo)) throw error('Tipo no válido');
+      where.tipo = q.tipo;
+    }
+    if (q.categoriaId) where.categoriaId = id(q.categoriaId);
+    if (q.metodoPago) where.metodoPago = { equals: texto(q.metodoPago, 'Método de pago', 50), mode: 'insensitive' };
+    if (q.buscar) where.descripcion = { contains: texto(q.buscar, 'Búsqueda', 255), mode: 'insensitive' };
+    if (q.desde || q.hasta) {
+      where.fecha = {};
+      if (q.desde) { fecha(q.desde); where.fecha.gte = new Date(`${q.desde}T00:00:00-04:00`); }
+      if (q.hasta) {
+        fecha(q.hasta);
+        const fin = new Date(`${q.hasta}T00:00:00-04:00`);
+        fin.setUTCDate(fin.getUTCDate() + 1);
+        where.fecha.lt = fin;
+      }
+      if (q.desde && q.hasta && q.desde > q.hasta) throw error('La fecha inicial no puede ser posterior a la final');
+    }
+    res.json({ status: 'ok', data: await prisma.movimiento.findMany({ where, include, orderBy: [{ fecha: 'desc' }, { id: 'desc' }] }) });
+  } catch (e) { next(e); }
 });
 
-// POST /api/movimientos
+router.get('/metodos', async (req, res, next) => {
+  try {
+    const rows = await prisma.movimiento.findMany({ where: { usuarioId: req.usuario.id, metodoPago: { not: null } }, distinct: ['metodoPago'], select: { metodoPago: true } });
+    res.json({ status: 'ok', data: rows.map((r) => r.metodoPago).filter(Boolean).sort() });
+  } catch (e) { next(e); }
+});
+
 router.post('/', async (req, res, next) => {
   try {
-    const { tipo, monto, descripcion, fecha, metodoPago, categoriaId } = req.body || {};
-
-    if (!tipo || !['ingreso', 'gasto'].includes(tipo)) {
-      return res.status(400).json({ status: 'error', message: 'El tipo debe ser "ingreso" o "gasto"' });
-    }
-    if (monto === undefined || monto === null || Number(monto) <= 0) {
-      return res.status(400).json({ status: 'error', message: 'El monto debe ser mayor que 0' });
-    }
-    if (!categoriaId) {
-      return res.status(400).json({ status: 'error', message: 'Debe indicar una categoría' });
-    }
-
-    // Validar que la categoría exista y pertenezca al usuario
-    const categoria = await prisma.categoria.findFirst({
-      where: { id: Number(categoriaId), usuarioId: req.usuario.id },
-    });
-    if (!categoria) {
-      return res.status(400).json({ status: 'error', message: 'Categoría no válida' });
-    }
-
-    const movimiento = await prisma.movimiento.create({
-      data: {
-        tipo,
-        monto: Number(monto),
-        descripcion: descripcion || null,
-        fecha: fecha ? new Date(fecha) : new Date(),
-        metodoPago: metodoPago || null,
-        usuarioId: req.usuario.id,
-        categoriaId: categoria.id,
-      },
-      include: { categoria: { select: { nombre: true, color: true, tipo: true } } },
-    });
-
-    res.status(201).json({ status: 'ok', data: movimiento });
-  } catch (e) {
-    next(e);
-  }
+    const data = await datos(req.body || {}, req.usuario.id);
+    res.status(201).json({ status: 'ok', data: await prisma.movimiento.create({ data: { ...data, usuarioId: req.usuario.id }, include }) });
+  } catch (e) { next(e); }
 });
 
-// DELETE /api/movimientos/:id
+router.put('/:id', async (req, res, next) => {
+  try {
+    const movimiento = await prisma.movimiento.findFirst({ where: { id: id(req.params.id), usuarioId: req.usuario.id } });
+    if (!movimiento) throw error('Movimiento no encontrado', 404);
+    const data = await datos(req.body || {}, req.usuario.id);
+    res.json({ status: 'ok', data: await prisma.movimiento.update({ where: { id: movimiento.id }, data, include }) });
+  } catch (e) { next(e); }
+});
+
 router.delete('/:id', async (req, res, next) => {
   try {
-    const id = Number(req.params.id);
-    const movimiento = await prisma.movimiento.findFirst({
-      where: { id, usuarioId: req.usuario.id },
-    });
-    if (!movimiento) {
-      return res.status(404).json({ status: 'error', message: 'Movimiento no encontrado' });
-    }
-    await prisma.movimiento.delete({ where: { id } });
+    const result = await prisma.movimiento.deleteMany({ where: { id: id(req.params.id), usuarioId: req.usuario.id } });
+    if (!result.count) throw error('Movimiento no encontrado', 404);
     res.json({ status: 'ok', message: 'Movimiento eliminado' });
-  } catch (e) {
-    next(e);
-  }
+  } catch (e) { next(e); }
 });
 
 module.exports = router;

@@ -7,6 +7,8 @@ const navItems = [
   { to: '/', label: 'Resumen', icon: '◈', end: true },
   { to: '/movimientos', label: 'Movimientos', icon: '↕' },
   { to: '/presupuestos', label: 'Presupuestos', icon: '◷' },
+  { to: '/metas', label: 'Metas de ahorro', icon: '◎' },
+  { to: '/recurrentes', label: 'Pagos recurrentes', icon: '↻' },
 ];
 
 export default function AppLayout() {

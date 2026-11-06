@@ -54,6 +54,8 @@ app.use('/api/categorias', auth, categoriasRoutes);
 app.use('/api/movimientos', auth, movimientosRoutes);
 app.use('/api/presupuestos', auth, presupuestosRoutes);
 app.use('/api/dashboard', auth, dashboardRoutes);
+app.use('/api/metas', auth, require('./routes/metas.routes'));
+app.use('/api/recurrentes', auth, require('./routes/recurrentes.routes'));
 
 // Ruta no encontrada
 app.use('/api', (req, res) => {

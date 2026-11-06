@@ -6,8 +6,10 @@ const prisma = require('../lib/prisma');
 // GET /api/dashboard
 router.get('/', async (req, res, next) => {
   try {
-    const ahora = new Date();
-    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const local = require('../lib/validacion').hoy();
+    const [anio, mes] = local.split('-').map(Number);
+    const inicioMes = new Date(`${local.slice(0, 7)}-01T00:00:00-04:00`);
+    const finMes = new Date(Date.UTC(anio, mes, 1, 4));
     const monto = (movs, tipo) => movs.filter((m) => m.tipo === tipo).reduce((s, m) => s + Number(m.monto), 0);
 
     // Totales de todos los movimientos (saldo acumulado)
@@ -17,7 +19,7 @@ router.get('/', async (req, res, next) => {
 
     // Movimientos del mes actual
     const delMes = await prisma.movimiento.findMany({
-      where: { usuarioId: req.usuario.id, fecha: { gte: inicioMes } },
+      where: { usuarioId: req.usuario.id, fecha: { gte: inicioMes, lt: finMes } },
     });
     const ingresosMes = monto(delMes, 'ingreso');
     const gastosMes = monto(delMes, 'gasto');

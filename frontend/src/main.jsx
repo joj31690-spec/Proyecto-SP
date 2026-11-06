@@ -8,6 +8,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Movimientos from './pages/Movimientos';
 import Presupuestos from './pages/Presupuestos';
+import Metas from './pages/Metas';
+import Recurrentes from './pages/Recurrentes';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -27,6 +29,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route index element={<Dashboard />} />
             <Route path="movimientos" element={<Movimientos />} />
             <Route path="presupuestos" element={<Presupuestos />} />
+            <Route path="metas" element={<Metas />} />
+            <Route path="recurrentes" element={<Recurrentes />} />
           </Route>
           <Route path="*" element={<RequireAuth><AppLayout /></RequireAuth>} />
         </Routes>

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { isAutenticado } from '../lib/auth';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, sesionExpirada } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
@@ -40,6 +40,7 @@ export default function Login() {
           <p className="muted">Accede a tu panel de control financiero</p>
         </div>
 
+        {sesionExpirada && <div className="alert">Tu sesión venció o ya no es válida. Inicia sesión nuevamente para continuar.</div>}
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={onSubmit} className="stack">
