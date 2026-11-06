@@ -1,7 +1,8 @@
 const router = require('express').Router();
 const prisma = require('../lib/prisma');
-const { Prisma } = require('@prisma/client');
-const { error, id, dinero, texto, fecha, hoy } = require('../lib/validacion');
+const { error, id, dinero, texto, fecha } = require('../lib/validacion');
+const { neto, exclusivo } = require('../lib/finanzas');
+const ahorro = require('../lib/ahorro');
 
 async function propia(metaId, usuarioId) {
   const meta = await prisma.metaAhorro.findFirst({ where: { id: id(metaId), usuarioId } });
@@ -24,7 +25,7 @@ router.get('/', async (req, res, next) => {
       orderBy: { creadoEn: 'desc' },
     });
     res.json({ status: 'ok', data: metas.map((m) => {
-      const ahorrado = m.aportes.reduce((sum, a) => sum.plus(a.monto), new Prisma.Decimal(0));
+      const ahorrado = neto(m.aportes);
       return { ...m, ahorrado, restante: m.objetivo.greaterThan(ahorrado) ? m.objetivo.minus(ahorrado) : 0, completada: ahorrado.greaterThanOrEqualTo(m.objetivo) };
     }) });
   } catch (e) { next(e); }
@@ -45,29 +46,31 @@ router.put('/:id', async (req, res, next) => {
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const result = await prisma.metaAhorro.deleteMany({ where: { id: id(req.params.id), usuarioId: req.usuario.id } });
-    if (!result.count) throw error('Meta no encontrada', 404);
+    await exclusivo(req.usuario.id, async (tx) => {
+      const meta = await ahorro.propia(tx, req.params.id, req.usuario.id);
+      await tx.metaAhorro.delete({ where: { id: meta.id } });
+    });
     res.json({ status: 'ok' });
   } catch (e) { next(e); }
 });
 
 router.post('/:id/aportes', async (req, res, next) => {
   try {
-    const meta = await propia(req.params.id, req.usuario.id);
-    const body = req.body || {};
-    const dia = body.fecha || hoy();
-    if (dia > hoy()) throw error('Un aporte realizado no puede tener fecha futura');
-    res.status(201).json({ status: 'ok', data: await prisma.aporteAhorro.create({ data: {
-      metaId: meta.id, monto: dinero(body.monto), fecha: fecha(dia), nota: texto(body.nota, 'Nota', 255),
-    } }) });
+    res.status(201).json({ status: 'ok', data: await exclusivo(req.usuario.id, (tx) => ahorro.registrar(tx, req.usuario.id, req.params.id, req.body || {}, 'aporte')) });
   } catch (e) { next(e); }
 });
 
 router.delete('/:id/aportes/:aporteId', async (req, res, next) => {
   try {
-    const result = await prisma.aporteAhorro.deleteMany({ where: { id: id(req.params.aporteId), metaId: id(req.params.id), meta: { usuarioId: req.usuario.id } } });
-    if (!result.count) throw error('Aporte no encontrado', 404);
+    await exclusivo(req.usuario.id, (tx) => ahorro.corregir(tx, req.usuario.id, req.params.id, req.params.aporteId));
     res.json({ status: 'ok' });
+  } catch (e) { next(e); }
+});
+
+router.post('/:id/retiros', async (req, res, next) => {
+  try {
+    if (req.body?.crearGasto !== undefined && typeof req.body.crearGasto !== 'boolean') throw error('Operación no válida');
+    res.status(201).json({ status: 'ok', data: await exclusivo(req.usuario.id, (tx) => ahorro.registrar(tx, req.usuario.id, req.params.id, req.body || {}, 'retiro')) });
   } catch (e) { next(e); }
 });
 

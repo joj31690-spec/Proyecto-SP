@@ -10,12 +10,13 @@ router.get('/', async (req, res, next) => {
     const [anio, mes] = local.split('-').map(Number);
     const inicioMes = new Date(`${local.slice(0, 7)}-01T00:00:00-04:00`);
     const finMes = new Date(Date.UTC(anio, mes, 1, 4));
-    const monto = (movs, tipo) => movs.filter((m) => m.tipo === tipo).reduce((s, m) => s + Number(m.monto), 0);
+    const monto = (movs, tipo) => movs.filter((m) => m.tipo === tipo && m.naturaleza !== 'capital').reduce((s, m) => s + Number(m.monto), 0);
 
     // Totales de todos los movimientos (saldo acumulado)
     const todos = await prisma.movimiento.findMany({ where: { usuarioId: req.usuario.id } });
     const totalIngresos = monto(todos, 'ingreso');
     const totalGastos = monto(todos, 'gasto');
+    const efectivo = await require('../lib/finanzas').resumen(prisma, req.usuario.id);
 
     // Movimientos del mes actual
     const delMes = await prisma.movimiento.findMany({
@@ -27,7 +28,7 @@ router.get('/', async (req, res, next) => {
     // Últimos 8 movimientos
     const recientes = await prisma.movimiento.findMany({
       where: { usuarioId: req.usuario.id },
-      include: { categoria: { select: { nombre: true, color: true } } },
+      include: { categoria: { select: { nombre: true, color: true } }, ahorro: { select: { metaId: true } }, capitalPrestamo: { select: { prestamoId: true } }, interesPrestamo: { select: { prestamoId: true } } },
       orderBy: { fecha: 'desc' },
       take: 8,
     });
@@ -35,7 +36,9 @@ router.get('/', async (req, res, next) => {
     res.json({
       status: 'ok',
       data: {
-        saldo: totalIngresos - totalGastos,
+        saldo: Number(efectivo.saldo),
+        reservado: Number(efectivo.reservado),
+        disponible: Number(efectivo.disponible),
         totalIngresos,
         totalGastos,
         ingresosMes,

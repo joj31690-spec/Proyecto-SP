@@ -6,9 +6,9 @@ import { useAuth } from '../context/AuthContext';
 const navItems = [
   { to: '/', label: 'Resumen', icon: '◈', end: true },
   { to: '/movimientos', label: 'Movimientos', icon: '↕' },
-  { to: '/presupuestos', label: 'Presupuestos', icon: '◷' },
   { to: '/metas', label: 'Metas de ahorro', icon: '◎' },
-  { to: '/recurrentes', label: 'Pagos recurrentes', icon: '↻' },
+  { to: '/planificacion', label: 'Planificación', icon: '◷' },
+  { to: '/prestamos', label: 'Deudas y préstamos', icon: '⇄' },
 ];
 
 export default function AppLayout() {
@@ -43,6 +43,7 @@ export default function AppLayout() {
               {item.label}
             </NavLink>
           ))}
+          <NavLink to="/configuracion" className={({ isActive }) => `nav-link nav-settings${isActive ? ' active' : ''}`}><span className="nav-icon">⚙</span>Configuración</NavLink>
         </nav>
 
         <div className="sidebar-bottom">

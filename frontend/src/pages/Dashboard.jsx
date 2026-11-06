@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 import TarjetaResumen, { formatMonto } from '../components/TarjetaResumen';
 import MovimientoItem from '../components/MovimientoItem';
 import ProgresoMeta from '../components/ProgresoMeta';
-import { fechaVisible } from '../lib/fechas';
+import { fechaVisible, hoy } from '../lib/fechas';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -19,14 +19,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     api.getMetas().then(setMetas).catch((e) => setErrorMetas(e.message));
-    api.getRecurrentes().then((rows) => setRecordatorios(rows.filter((r) => ['vencido', 'hoy', 'proximo'].includes(r.estado)))).catch((e) => setErrorRecordatorios(e.message));
+    Promise.all([api.getRecurrentes(), api.getPrestamos()]).then(([rows, prestamos]) => {
+      const limite = new Date(`${hoy()}T12:00:00Z`);
+      limite.setUTCDate(limite.getUTCDate() + 7);
+      const recurrentes = rows.filter((r) => ['vencido', 'hoy', 'proximo'].includes(r.estado)).map((r) => ({ ...r, clave: `r-${r.id}`, url: '/planificacion/recurrentes' }));
+      const deudas = prestamos.filter((p) => p.estado !== 'saldado' && p.vencimiento && p.vencimiento.slice(0, 10) <= limite.toISOString().slice(0, 10)).map((p) => ({ clave: `p-${p.id}`, nombre: `${p.tipo === 'debo' ? 'Devolver a' : 'Cobrar a'} ${p.persona}`, monto: p.pendiente, proximoVencimiento: p.vencimiento, estado: p.estado === 'vencido' ? 'vencido' : p.vencimiento.slice(0, 10) === hoy() ? 'hoy' : 'proximo', url: '/prestamos' }));
+      setRecordatorios([...recurrentes, ...deudas].sort((a, b) => a.proximoVencimiento.localeCompare(b.proximoVencimiento)));
+    }).catch((e) => setErrorRecordatorios(e.message));
   }, []);
 
   useEffect(() => {
-    const ahora = new Date();
+    const [anio, mes] = hoy().split('-').map(Number);
     Promise.all([
       api.getDashboard(),
-      api.getPresupuestos(ahora.getFullYear(), ahora.getMonth() + 1),
+      api.getPresupuestos(anio, mes),
     ])
       .then(([d, p]) => {
         setData(d);
@@ -52,11 +58,12 @@ export default function Dashboard() {
       <p className="page-subtitle">Tu panorama financiero general.</p>
 
       <div className="grid grid-cards">
-        <TarjetaResumen titulo="Saldo total" monto={data.saldo} icono="🏦" />
-        <TarjetaResumen titulo="Ingresos totales" monto={data.totalIngresos} tipo="ingreso" icono="📈" />
-        <TarjetaResumen titulo="Gastos totales" monto={data.totalGastos} tipo="gasto" icono="📉" />
-        <TarjetaResumen titulo="Balance del mes" monto={data.balanceMes} tipo={data.balanceMes >= 0 ? 'ingreso' : 'gasto'} icono="🗓️" />
+        <TarjetaResumen titulo="Saldo registrado" monto={data.saldo} icono="🏦" />
+        <TarjetaResumen titulo="Reservado en metas" monto={data.reservado} icono="◎" />
+        <TarjetaResumen titulo="Disponible" monto={data.disponible} tipo={data.disponible < 0 ? 'gasto' : 'ingreso'} icono="↕" />
       </div>
+      <div className="row row-wrap muted" style={{ marginTop: 'var(--space-4)' }}><span>Este mes: ingresos <strong className="monto-pos">{formatMonto(data.ingresosMes)}</strong></span><span>Gastos <strong className="monto-neg">{formatMonto(data.gastosMes)}</strong></span><span>El capital de préstamos se refleja en el saldo, no en estos totales.</span></div>
+      {data.disponible < 0 && <p className="alert alert-error" style={{ marginTop: 'var(--space-4)' }}>Tus reservas superan el saldo registrado. Revisa tus movimientos o libera dinero desde tus metas.</p>}
 
       <section className="card dashboard-goals" aria-labelledby="titulo-metas">
         <div className="row-between row-wrap"><div><h2 id="titulo-metas">Tus metas de ahorro</h2><p className="muted">Cada aporte te acerca a lo que quieres lograr.</p></div><Link to="/metas" className="btn btn-primary btn-sm">{metas?.length ? 'Administrar metas' : 'Crear mi primera meta'}</Link></div>
@@ -67,10 +74,10 @@ export default function Dashboard() {
         </>}
       </section>
 
-      <section className="card" style={{ marginTop: 'var(--space-6)' }} aria-labelledby="titulo-recordatorios">
-        <div className="row-between row-wrap"><h2 id="titulo-recordatorios">Recordatorios de pago</h2><Link to="/recurrentes" className="btn btn-ghost btn-sm">Ver pagos recurrentes →</Link></div>
-        {errorRecordatorios ? <p className="alert alert-error">No se pudieron cargar los recordatorios: {errorRecordatorios}</p> : !recordatorios ? <div className="spinner" /> : recordatorios.length === 0 ? <p className="muted" style={{ marginTop: 'var(--space-3)' }}>No tienes pagos por vencer dentro de tu periodo de aviso ni pagos atrasados.</p> : <div className="stack" style={{ marginTop: 'var(--space-4)' }}>{recordatorios.map((r) => <div key={r.id} className="row-between row-wrap"><div><strong>{r.nombre}</strong><p className={r.estado === 'vencido' ? 'monto-neg' : 'muted'}>{r.estado === 'vencido' ? 'Vencido' : r.estado === 'hoy' ? 'Vence hoy' : 'Próximo a vencer'} · {fechaVisible(r.proximoVencimiento)}</p></div><span className="monto">{formatMonto(r.monto)}</span><Link to="/recurrentes" className="btn btn-ghost btn-sm">Revisar pago</Link></div>)}</div>}
-      </section>
+      {(errorRecordatorios || recordatorios?.length > 0) && <section className="card" style={{ marginTop: 'var(--space-6)' }} aria-labelledby="titulo-recordatorios">
+        <div className="row-between row-wrap"><h2 id="titulo-recordatorios">Pendientes</h2><span className="muted">Pagos recurrentes y préstamos</span></div>
+        {errorRecordatorios ? <p className="alert alert-error">No se pudieron cargar los pendientes: {errorRecordatorios}</p> : <div className="stack" style={{ marginTop: 'var(--space-4)' }}>{recordatorios.slice(0, 5).map((r) => <div key={r.clave} className="row-between row-wrap"><div><strong>{r.nombre}</strong><p className={r.estado === 'vencido' ? 'monto-neg' : 'muted'}>{r.estado === 'vencido' ? 'Vencido' : r.estado === 'hoy' ? 'Vence hoy' : 'Próximo a vencer'} · {fechaVisible(r.proximoVencimiento)}</p></div><span className="monto">{formatMonto(r.monto)}</span><Link to={r.url} className="btn btn-ghost btn-sm">Revisar</Link></div>)}{recordatorios.length > 5 && <p className="muted">Hay {recordatorios.length - 5} pendientes más. Consúltalos en <Link to="/planificacion/recurrentes">Planificación</Link> y <Link to="/prestamos">Deudas y préstamos</Link>.</p>}</div>}
+      </section>}
 
       {presupuestos && (
         <div className="card" style={{ marginTop: 'var(--space-6)' }}>
@@ -85,7 +92,7 @@ export default function Dashboard() {
             </p>
           ) : (
             <div className="stack">
-              {presupuestos.map((p) => {
+              {presupuestos.slice(0, 3).map((p) => {
                 const pct = p.monto > 0 ? Math.round((p.gastado / p.monto) * 100) : 0;
                 const excedido = p.gastado > p.monto;
                 return (

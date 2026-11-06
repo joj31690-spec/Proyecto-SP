@@ -154,6 +154,14 @@ docker compose down
 
 ## Funcionalidades de gestión financiera
 
+### Navegación
+
+El menú contiene **Resumen**, **Movimientos**, **Metas de ahorro**,
+**Planificación**, **Deudas y préstamos** y **Configuración**.
+Planificación agrupa Presupuestos y Pagos recurrentes en dos pestañas.
+Configuración contiene las categorías. Las direcciones antiguas de presupuestos
+y recurrentes redirigen a sus nuevas ubicaciones.
+
 ### Movimientos
 
 - Crear, editar y eliminar ingresos o gastos propios.
@@ -161,6 +169,11 @@ docker compose down
   categoría, tipo y método de pago. Los métodos incluyen los valores registrados
   por el usuario; al registrar un movimiento se sugieren efectivo, QR, transferencia y tarjeta.
 - Limpiar filtros y consultar el número de resultados.
+- La búsqueda permanece visible y los filtros avanzados están plegados por defecto.
+  Al aplicarlos se cierra el panel y aparecen etiquetas removibles. La creación y
+  edición se realizan en un diálogo lateral, con foco contenido y cierre por Escape.
+- Los movimientos vinculados con ahorro o préstamos se corrigen desde su apartado
+  de origen para evitar que sus saldos e historiales queden desincronizados.
 - Las fechas de movimientos y sus filtros utilizan el calendario de Bolivia
   (`America/La_Paz`). Los montos admiten hasta dos decimales.
 
@@ -169,12 +182,54 @@ docker compose down
 - Página propia en **Metas de ahorro**, con nombre, monto objetivo y fecha opcional.
 - Apartado destacado en el resumen con total ahorrado, metas alcanzadas y hasta tres
   metas, mostrando primero las que siguen en progreso.
-- Registrar aportes con fecha y nota; consultar y eliminar aportes incorrectos.
+- Registrar aportes con fecha y nota; consultar y corregir registros incorrectos.
 - Editar el objetivo o eliminar la meta con su historial. Se permiten aportes que
   superen el objetivo; la barra se limita al 100 % y la meta se marca como alcanzada.
-- Los aportes son un seguimiento del dinero ya separado: **no crean gastos,
-  no realizan transferencias y no modifican el saldo financiero**. El usuario debe
-  evitar asignar el mismo ahorro a varias metas. La fecha objetivo es informativa.
+- El resumen distingue **saldo registrado**, **reservado en metas** y **disponible**.
+  Un aporte reserva dinero disponible, sin crear un gasto ni modificar el saldo.
+  No se permite reservar el mismo dinero en varias metas ni aportar por encima de
+  lo disponible. Los aportes anteriores se conservan como reservas; si superan el
+  saldo, la interfaz lo indica para que el usuario concilie los registros.
+- **Retirar ahorro** libera lo reservado sin cambiar el saldo. **Usar para un gasto**
+  registra un retiro y su gasto vinculado en una transacción: el saldo baja una sola vez.
+- El historial distingue aportes, retiros y retiros con gasto. No se puede retirar
+  más que el ahorro neto ni borrar un aporte que dejaría retiros sin respaldo.
+  Corregir un retiro con gasto elimina ambas partes. Eliminar una meta libera su
+  reserva y conserva los gastos ya realizados.
+- La fecha objetivo es informativa. No se realizan operaciones bancarias reales.
+
+### Categorías personalizables
+
+- Se conservan las nueve categorías iniciales, que cada usuario puede editar,
+  archivar o eliminar. Se pueden crear categorías de ingreso y gasto con nombre y color.
+- Archivar oculta una categoría al crear registros, pero conserva sus movimientos,
+  presupuestos y pagos recurrentes ya programados. Los filtros permiten consultar archivadas.
+- Una categoría sin referencias se elimina directamente. Si tiene registros,
+  se puede reasignar todo a otra categoría activa del mismo tipo antes de eliminarla.
+  Si ambas tienen presupuesto para el mismo mes se pide resolver el conflicto;
+  los límites no se suman ni sobrescriben automáticamente.
+- Las categorías con referencias no pueden cambiar de tipo y los nombres no se
+  pueden duplicar para el mismo usuario, incluso con diferencias de mayúsculas.
+
+### Deudas y préstamos
+
+- Pestañas **Debo** y **Me deben**, con persona/entidad, capital, fecha, vencimiento
+  opcional, notas, importe pendiente e historial.
+- Registrar un préstamo crea automáticamente la entrada o salida de capital.
+  Las devoluciones parciales reducen lo pendiente y registran el flujo de dinero.
+- El **capital** cambia el saldo registrado pero no se cuenta como ingreso o gasto
+  habitual ni consume presupuestos. Los intereses se registran por separado en una
+  categoría elegida por el usuario y sí cuentan como ingreso o gasto habitual.
+- Los intereses son importes efectivamente pagados/cobrados introducidos por el
+  usuario; no se calculan tasas, cuotas ni intereses futuros automáticamente.
+- No se puede devolver más capital del pendiente. Se admiten pagos solo de intereses
+  mientras haya capital pendiente. Las solicitudes repetidas no duplican operaciones.
+- Se pueden editar persona, vencimiento y notas. Para corregir una devolución se
+  eliminan sus movimientos vinculados y el capital vuelve a quedar pendiente.
+  Eliminar el registro completo de un préstamo elimina todos sus movimientos y
+  recalcula el saldo; es una corrección, no una devolución de dinero.
+- El resumen muestra vencimientos de préstamos de los próximos siete días y
+  atrasados junto con los pagos recurrentes, con hasta cinco pendientes visibles.
 
 ### Gastos recurrentes y recordatorios
 
@@ -202,8 +257,10 @@ docker compose config --quiet
 ```
 
 Las pruebas de API crean usuarios temporales y los eliminan al terminar. Cubren
-edición, filtros combinados, aislamiento por usuario, aportes, metas alcanzadas,
-saldo, recordatorios y concurrencia de pagos, además del calendario de recurrencias.
+edición, filtros combinados, aislamiento por usuario, categorías y reasignación,
+reservas, retiros concurrentes, gastos vinculados, préstamos en ambas direcciones,
+devoluciones, intereses, correcciones y operaciones repetidas, además del calendario
+y la concurrencia de pagos recurrentes.
 
 Si se actualiza una instalación antigua creada con `prisma db push`, antes de
 usar las migraciones se debe comprobar que su esquema coincide con las migraciones

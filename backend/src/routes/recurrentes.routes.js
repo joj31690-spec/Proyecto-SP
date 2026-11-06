@@ -7,7 +7,7 @@ async function datos(body, usuarioId) {
   if (!['semanal', 'quincenal', 'mensual', 'anual'].includes(body.frecuencia)) throw error('Frecuencia no válida');
   const diasAviso = Number(body.diasAviso);
   if (!Number.isInteger(diasAviso) || diasAviso < 0 || diasAviso > 30) throw error('El aviso debe estar entre 0 y 30 días');
-  const categoria = await prisma.categoria.findFirst({ where: { id: id(body.categoriaId), usuarioId, tipo: 'gasto' } });
+  const categoria = await prisma.categoria.findFirst({ where: { id: id(body.categoriaId), usuarioId, tipo: 'gasto', archivada: false } });
   if (!categoria) throw error('Selecciona una categoría de gasto propia');
   return {
     nombre: texto(body.nombre, 'Nombre', 100, true), monto: dinero(body.monto),

@@ -52,6 +52,7 @@ test('Edición, filtros, metas y pagos recurrentes: persistencia y aislamiento p
     assert.equal((await call(`/movimientos?${query}`, b.token)).length, 0);
     await call('/movimientos?desde=2026-12-31&hasta=2026-01-01', a.token, 'GET', undefined, 400);
 
+    await call('/movimientos', a.token, 'POST', { ...body, tipo: 'ingreso', categoriaId: ingreso.id, monto: '1000', descripcion: 'Ingreso para ahorro' }, 201);
     const saldo = (await call('/dashboard', a.token)).saldo;
     const meta = await call('/metas', a.token, 'POST', { nombre: 'Fondo de prueba', objetivo: '100', fechaObjetivo: '2027-06-30' }, 201);
     assert.equal(meta.fechaObjetivo.slice(0, 10), '2027-06-30');
@@ -84,7 +85,7 @@ test('Edición, filtros, metas y pagos recurrentes: persistencia y aislamiento p
     assert.equal((await call('/dashboard', a.token)).saldo, saldo - 25);
     assert.notEqual((await call('/recurrentes', a.token))[0].proximoVencimiento.slice(0, 10), hoy());
     await call(`/recurrentes/${r.id}`, a.token, 'DELETE');
-    assert.equal((await call('/movimientos', a.token)).length, 2, 'Eliminar la programación conserva el pago');
+    assert.equal((await call('/movimientos', a.token)).length, 3, 'Eliminar la programación conserva el pago');
   } finally {
     for (const u of usuarios) await prisma.usuario.delete({ where: { id: u.usuario.id } });
     await prisma.$disconnect();

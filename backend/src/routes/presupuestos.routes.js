@@ -39,6 +39,7 @@ router.get('/', async (req, res, next) => {
             usuarioId: req.usuario.id,
             categoriaId: p.categoriaId,
             tipo: 'gasto',
+            naturaleza: 'ordinario',
             fecha: { gte: inicio, lt: fin },
           },
           _sum: { monto: true },
@@ -68,7 +69,7 @@ router.post('/', async (req, res, next) => {
     }
 
     const categoria = await prisma.categoria.findFirst({
-      where: { id: Number(categoriaId), usuarioId: req.usuario.id },
+      where: { id: Number(categoriaId), usuarioId: req.usuario.id, tipo: 'gasto', archivada: false },
     });
     if (!categoria) {
       return res.status(400).json({ status: 'error', message: 'Categoría no válida' });
